@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  api:
+    build: ./api
+    container_name: api
+    restart: unless-stopped
+    command: npm run start:prod
+    environment:
+      - PORT=3001
+      - JWT_SECRET=ya3499_SDFDFASDF___34534&&)
+      - DB_HOST=postgres_db
+      - DB_PORT=5432
+      - DB_USER=linker_root
+      - DB_PASSWORD=root
+      - DB_NAME=linker
+    depends_on:
+      - postgres_db
+    networks:
+      - linker-docker-network
+
+  postgres_db:
+    image: postgres:latest
+    container_name: psql
+    environment:
+      - POSTGRES_USER=linker_root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=linker
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    networks:
+      - linker-docker-network
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: linker-docker-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf.prod:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+      - api
+    networks:
+      - linker-docker-network
+
+volumes:
+  postgres_db:
+
+networks:
+  linker-docker-network:
+    driver: bridge
